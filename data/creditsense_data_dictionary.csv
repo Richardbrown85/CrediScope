@@ -1,0 +1,28 @@
+column,type,description,protected_attribute,notes
+application_id,string,Unique application reference,No,Identifier only - must NOT be used as a feature
+age_years,integer,Applicant age at application,Yes,Protected characteristic under Equality Act 2010
+sex,categorical,Female / Male,Yes,Protected characteristic under Equality Act 2010
+marital_status,categorical,Single / Married / Divorced / Widowed,Yes,Correlates strongly with age
+residency_status,categorical,UK Citizen / Settled Status / Visa Holder,Yes,Proxy for nationality - protected characteristic
+num_dependents,integer,Number of financial dependents,No,Correlates with marital_status
+region,categorical,UK region of residence,No,Can act as a proxy for other attributes
+employment_status,categorical,Permanent / Fixed-term / Self-employed / Zero-hours / Unemployed / Retired,No,Retired appears only in older applicants
+months_in_current_job,integer,Tenure in current employment (months),No,Zero for unemployed applicants - structural zero not missing data
+annual_income_gbp,integer,Gross annual income in GBP,No,Not adjusted for region
+monthly_expenses_gbp,integer,Declared monthly outgoings in GBP,No,Self-declared at application
+housing_status,categorical,Owner / Mortgage / Renting / Living with family,Yes,Treated as protected for this assessment
+years_at_current_address,float,Years at current address,No,MISSING in ~2.8% of rows - handling is your decision
+existing_debt_gbp,integer,Total outstanding debt in GBP,No,Zero means no existing debt
+num_existing_credit_lines,integer,Count of open credit lines,No,
+num_late_payments_24m,integer,Late payments in previous 24 months,No,
+credit_history,categorical,No credits taken / All paid on time / Existing credits paid / Past delays / Critical account,No,Ordinal in nature - consider encoding carefully
+has_savings_account,categorical,Yes / No,No,
+savings_balance_gbp,float,Savings balance in GBP,No,MISSING in ~4.3% of rows. Zero where has_savings_account is No
+checking_account_status,categorical,No account / Overdrawn / 0 to 500 GBP / 500 GBP or more,No,Ordinal with a No account level that is not on the scale
+loan_amount_gbp,integer,Amount requested in GBP,No,
+loan_term_months,integer,Requested term: 12 24 36 48 60 or 72,No,
+loan_purpose,categorical,Stated purpose of the loan,No,
+has_guarantor,categorical,Yes / No,No,More common among younger applicants
+previous_application_declined,categorical,Yes / No,No,
+application_channel,categorical,Online / Branch / Broker / Phone,No,
+default_within_24m,integer,TARGET. 1 if the applicant defaulted within 24 months,No,Approximately 26% positive class - imbalanced
