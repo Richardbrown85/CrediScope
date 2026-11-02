@@ -109,6 +109,7 @@ def predict_risk(
     num_dependents,
     region,
     employment_status,
+    years_in_current_job,
     months_in_current_job,
     annual_income_gbp,
     monthly_expenses_gbp,
@@ -126,12 +127,17 @@ def predict_risk(
     has_guarantor,
     previous_application_declined,
     application_channel
-):
+    ):
+    months_in_current_job_total = (
+        years_in_current_job * 12
+        + months_in_current_job
+    )
+
     applicant = pd.DataFrame([{
         "num_dependents": num_dependents,
         "region": region,
         "employment_status": employment_status,
-        "months_in_current_job": months_in_current_job,
+        "months_in_current_job": months_in_current_job_total,
         "annual_income_gbp": annual_income_gbp,
         "monthly_expenses_gbp": monthly_expenses_gbp,
         "years_at_current_address": years_at_current_address,
@@ -149,6 +155,13 @@ def predict_risk(
         "previous_application_declined": previous_application_declined,
         "application_channel": application_channel
     }])
+
+    prediction = model.predict(applicant)[0]
+    probability = model.predict_proba(applicant)[0][1]
+
+    decision = "Higher Risk" if prediction == 1 else "Lower Risk"
+
+    return decision, f"{probability:.1%}"
 
     prediction = model.predict(applicant)[0]
     probability = model.predict_proba(applicant)[0][1]
@@ -249,10 +262,21 @@ with gr.Blocks(title="CrediScope") as demo:
         ]
     )
 
+    years_in_current_job = gr.Number(
+        label="Years in Current Job",
+        value=0,
+        minimum=0,
+        precision=0,
+        step=1
+    )
+
     months_in_current_job = gr.Number(
         label="Months in Current Job",
         value=0,
-        minimum=0
+        minimum=0,
+        maximum=11,
+        precision=0,
+        step=1
     )
 
     years_at_current_address = gr.Number(
@@ -378,6 +402,7 @@ with gr.Blocks(title="CrediScope") as demo:
             num_dependents,
             region,
             employment_status,
+            years_in_current_job,
             months_in_current_job,
             annual_income_gbp,
             monthly_expenses_gbp,
