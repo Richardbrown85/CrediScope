@@ -44,5 +44,7 @@ applicant_df = pd.DataFrame([sample_applicant])
 prediction = model.predict(applicant_df)[0]
 probability = model.predict_proba(applicant_df)[0][1]
 
-print("Prediction:", prediction)
-print("Default probability:", probability)
+decision = "Higher Risk" if prediction == 1 else "Lower Risk"
+
+print("Decision:", decision)
+print(f"Predicted default probability: {probability:.1%}")
