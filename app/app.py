@@ -307,5 +307,25 @@ with gr.Blocks(title="CrediScope") as demo:
         choices=["Yes", "No"]
     )
 
+    # -------------------------
+    # Application Details
+    # -------------------------
+
+    gr.Markdown("## Application Details")
+
+    previous_application_declined = gr.Dropdown(
+        label="Previous Application Declined",
+        choices=["Yes", "No"]
+    )
+
+    application_channel = gr.Dropdown(
+        label="Application Channel",
+        choices=[
+            "Online",
+            "Branch",
+            "Telephone"
+        ]
+    )
+
 
 demo.launch()
