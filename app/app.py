@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import joblib
+import shap
 
 project_root = Path(__file__).resolve().parent.parent
 
@@ -48,3 +49,58 @@ decision = "Higher Risk" if prediction == 1 else "Lower Risk"
 
 print("Decision:", decision)
 print(f"Predicted default probability: {probability:.1%}")
+
+preprocessor = model.named_steps["preprocessor"]
+classifier = model.named_steps["classifier"]
+
+transformed_applicant = preprocessor.transform(applicant_df)
+
+explainer = shap.TreeExplainer(classifier)
+shap_values = explainer.shap_values(transformed_applicant)
+
+feature_names = (
+    preprocessor
+    .named_steps["column_transformer"]
+    .get_feature_names_out()
+)
+
+default_shap_values = shap_values[0, :, 1]
+
+explanation = pd.DataFrame({
+    "feature": feature_names,
+    "shap_value": default_shap_values
+})
+
+explanation["absolute_shap"] = explanation["shap_value"].abs()
+
+top_factors = explanation.sort_values(
+    "absolute_shap",
+    ascending=False
+).head(5)
+
+print("\nTop prediction factors:")
+print(top_factors[["feature", "shap_value"]])
+
+friendly_labels = {
+    "numeric__expense_to_income_ratio": "Expense-to-income ratio",
+    "numeric__annual_income_gbp": "Annual income",
+    "numeric__debt_to_income_ratio": "Debt-to-income ratio",
+    "numeric__num_late_payments_24m": "Late payments in the last 24 months",
+    "categorical__credit_history_All paid on time": "Credit history: all paid on time"
+}
+
+top_factors["display_feature"] = top_factors["feature"].replace(
+    friendly_labels
+)
+
+top_factors["direction"] = top_factors["shap_value"].apply(
+    lambda x: "higher" if x > 0 else "lower"
+)
+
+print("\nPlain-English factors:")
+
+for _, row in top_factors.iterrows():
+    print(
+        f"- {row['display_feature']} pushed the predicted default risk "
+        f"{row['direction']} for this applicant."
+    )
