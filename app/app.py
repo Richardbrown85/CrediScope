@@ -251,5 +251,26 @@ with gr.Blocks(title="CrediScope") as demo:
         ]
     )
 
+    # -------------------------
+    # Account Details
+    # -------------------------
+
+    gr.Markdown("## Account Details")
+
+    has_savings_account = gr.Dropdown(
+        label="Has Savings Account",
+        choices=["Yes", "No"]
+    )
+
+    checking_account_status = gr.Dropdown(
+        label="Checking Account Status",
+        choices=[
+            "Overdrawn",
+            "0-500",
+            ">=500",
+            "No account"
+        ]
+    )
+
 
 demo.launch()
