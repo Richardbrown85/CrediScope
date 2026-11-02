@@ -165,142 +165,10 @@ with gr.Blocks(title="CrediScope") as demo:
     gr.Markdown("### Clear decisions. Clear reasons.")
 
     # -------------------------
-    # Applicant Details
+    # 1. Loan Details
     # -------------------------
 
-    gr.Markdown("## Applicant Details")
-
-    num_dependents = gr.Number(
-        label="Number of Dependants",
-        value=0,
-        minimum=0
-    )
-
-    region = gr.Dropdown(
-        label="Region",
-        choices=[
-            "East of England",
-            "East Midlands",
-            "London",
-            "North East",
-            "North West",
-            "Scotland",
-            "South East",
-            "South West",
-            "Wales",
-            "West Midlands",
-            "Yorkshire and The Humber"
-        ]
-    )
-
-    employment_status = gr.Dropdown(
-        label="Employment Status",
-        choices=[
-            "Employed",
-            "Self-employed",
-            "Unemployed",
-            "Student",
-            "Retired"
-        ]
-    )
-
-    months_in_current_job = gr.Number(
-        label="Months in Current Job",
-        value=0,
-        minimum=0
-    )
-
-    # -------------------------
-    # Financial Details
-    # -------------------------
-
-    gr.Markdown("## Financial Details")
-
-    annual_income_gbp = gr.Number(
-        label="Annual Income (£)",
-        value=30000,
-        minimum=0
-    )
-
-    monthly_expenses_gbp = gr.Number(
-        label="Monthly Expenses (£)",
-        value=1500,
-        minimum=0
-    )
-
-    existing_debt_gbp = gr.Number(
-        label="Existing Debt (£)",
-        value=0,
-        minimum=0
-    )
-
-    savings_balance_gbp = gr.Number(
-        label="Savings Balance (£)",
-        value=0,
-        minimum=0
-    )
-
-    # -------------------------
-    # Credit Details
-    # -------------------------
-
-    gr.Markdown("## Credit Details")
-
-    years_at_current_address = gr.Number(
-        label="Years at Current Address",
-        value=1,
-        minimum=0
-    )
-
-    num_existing_credit_lines = gr.Number(
-        label="Number of Existing Credit Lines",
-        value=0,
-        minimum=0
-    )
-
-    num_late_payments_24m = gr.Number(
-        label="Late Payments in Last 24 Months",
-        value=0,
-        minimum=0
-    )
-
-    credit_history = gr.Dropdown(
-        label="Credit History",
-        choices=[
-            "All paid on time",
-            "Existing credits paid",
-            "No credits taken",
-            "Past delays",
-            "Critical account"
-        ]
-    )
-
-    # -------------------------
-    # Account Details
-    # -------------------------
-
-    gr.Markdown("## Account Details")
-
-    has_savings_account = gr.Dropdown(
-        label="Has Savings Account",
-        choices=["Yes", "No"]
-    )
-
-    checking_account_status = gr.Dropdown(
-        label="Checking Account Status",
-        choices=[
-            "Overdrawn",
-            "0-500",
-            ">=500",
-            "No account"
-        ]
-    )
-
-    # -------------------------
-    # Loan Details
-    # -------------------------
-
-    gr.Markdown("## Loan Details")
+    gr.Markdown("## 1. Loan Details")
 
     loan_amount_gbp = gr.Number(
         label="Loan Amount (£)",
@@ -326,22 +194,6 @@ with gr.Blocks(title="CrediScope") as demo:
         ]
     )
 
-    has_guarantor = gr.Dropdown(
-        label="Has Guarantor",
-        choices=["Yes", "No"]
-    )
-
-    # -------------------------
-    # Application Details
-    # -------------------------
-
-    gr.Markdown("## Application Details")
-
-    previous_application_declined = gr.Dropdown(
-        label="Previous Application Declined",
-        choices=["Yes", "No"]
-    )
-
     application_channel = gr.Dropdown(
         label="Application Channel",
         choices=[
@@ -352,10 +204,161 @@ with gr.Blocks(title="CrediScope") as demo:
     )
 
     # -------------------------
-    # Prediction Output
+    # 2. Applicant Details
     # -------------------------
 
-    gr.Markdown("## Risk Assessment")
+    gr.Markdown("## 2. Applicant Details")
+
+    region = gr.Dropdown(
+        label="Region",
+        choices=[
+            "East of England",
+            "East Midlands",
+            "London",
+            "North East",
+            "North West",
+            "Scotland",
+            "South East",
+            "South West",
+            "Wales",
+            "West Midlands",
+            "Yorkshire and The Humber"
+        ]
+    )
+
+    num_dependents = gr.Number(
+        label="Number of Dependants",
+        value=0,
+        minimum=0
+    )
+
+    # -------------------------
+    # 3. Employment & Residence
+    # -------------------------
+
+    gr.Markdown("## 3. Employment & Residence")
+
+    employment_status = gr.Dropdown(
+        label="Employment Status",
+        choices=[
+            "Employed",
+            "Self-employed",
+            "Unemployed",
+            "Student",
+            "Retired"
+        ]
+    )
+
+    months_in_current_job = gr.Number(
+        label="Months in Current Job",
+        value=0,
+        minimum=0
+    )
+
+    years_at_current_address = gr.Number(
+        label="Years at Current Address",
+        value=1,
+        minimum=0
+    )
+
+    # -------------------------
+    # 4. Financial Position
+    # -------------------------
+
+    gr.Markdown("## 4. Financial Position")
+
+    annual_income_gbp = gr.Number(
+        label="Annual Income (£)",
+        value=30000,
+        minimum=0
+    )
+
+    monthly_expenses_gbp = gr.Number(
+        label="Monthly Expenses (£)",
+        value=1500,
+        minimum=0
+    )
+
+    existing_debt_gbp = gr.Number(
+        label="Existing Debt (£)",
+        value=0,
+        minimum=0
+    )
+
+    has_savings_account = gr.Dropdown(
+        label="Has Savings Account",
+        choices=["Yes", "No"]
+    )
+
+    savings_balance_gbp = gr.Number(
+        label="Savings Balance (£)",
+        value=0,
+        minimum=0
+    )
+
+    checking_account_status = gr.Dropdown(
+        label="Checking Account Status",
+        choices=[
+            "Overdrawn",
+            "0-500",
+            ">=500",
+            "No account"
+        ]
+    )
+
+    # -------------------------
+    # 5. Credit History
+    # -------------------------
+
+    gr.Markdown("## 5. Credit History")
+
+    num_existing_credit_lines = gr.Number(
+        label="Number of Existing Credit Lines",
+        value=0,
+        minimum=0
+    )
+
+    num_late_payments_24m = gr.Number(
+        label="Late Payments in Last 24 Months",
+        value=0,
+        minimum=0
+    )
+
+    credit_history = gr.Dropdown(
+        label="Credit History",
+        choices=[
+            "All paid on time",
+            "Existing credits paid",
+            "No credits taken",
+            "Past delays",
+            "Critical account"
+        ]
+    )
+
+    has_guarantor = gr.Dropdown(
+        label="Has Guarantor",
+        choices=["Yes", "No"]
+    )
+
+    previous_application_declined = gr.Dropdown(
+        label="Previous Application Declined",
+        choices=["Yes", "No"]
+    )
+
+    # -------------------------
+    # 6. Review
+    # -------------------------
+
+    gr.Markdown("## 6. Review Application")
+    gr.Markdown(
+        "Check the information above before running the risk assessment."
+    )
+
+    # -------------------------
+    # 7. Risk Assessment
+    # -------------------------
+
+    gr.Markdown("## 7. Risk Assessment")
 
     predict_button = gr.Button("Predict Risk")
 
@@ -398,6 +401,5 @@ with gr.Blocks(title="CrediScope") as demo:
             probability_output
         ]
     )
-
 
 demo.launch()
