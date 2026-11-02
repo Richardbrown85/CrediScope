@@ -351,5 +351,53 @@ with gr.Blocks(title="CrediScope") as demo:
         ]
     )
 
+    # -------------------------
+    # Prediction Output
+    # -------------------------
+
+    gr.Markdown("## Risk Assessment")
+
+    predict_button = gr.Button("Predict Risk")
+
+    decision_output = gr.Textbox(
+        label="Decision",
+        interactive=False
+    )
+
+    probability_output = gr.Textbox(
+        label="Predicted Default Probability",
+        interactive=False
+    )
+
+    predict_button.click(
+        fn=predict_risk,
+        inputs=[
+            num_dependents,
+            region,
+            employment_status,
+            months_in_current_job,
+            annual_income_gbp,
+            monthly_expenses_gbp,
+            years_at_current_address,
+            existing_debt_gbp,
+            num_existing_credit_lines,
+            num_late_payments_24m,
+            credit_history,
+            has_savings_account,
+            savings_balance_gbp,
+            checking_account_status,
+            loan_amount_gbp,
+            loan_term_months,
+            loan_purpose,
+            has_guarantor,
+            previous_application_declined,
+            application_channel
+        ],
+        outputs=[
+            decision_output,
+            probability_output
+        ]
+    )
+
 
 demo.launch()
