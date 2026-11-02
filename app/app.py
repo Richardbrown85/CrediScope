@@ -108,51 +108,85 @@ for _, row in top_factors.iterrows():
 import gradio as gr
 
 with gr.Blocks(title="CrediScope") as demo:
+
     gr.Markdown("# CrediScope")
     gr.Markdown("### Clear decisions. Clear reasons.")
 
+    # -------------------------
+    # Applicant Details
+    # -------------------------
+
     gr.Markdown("## Applicant Details")
 
-    with gr.Row():
-        num_dependents = gr.Number(
-            label="Number of Dependants",
-            value=0,
-            minimum=0
-        )
+    num_dependents = gr.Number(
+        label="Number of Dependants",
+        value=0,
+        minimum=0
+    )
 
-        region = gr.Dropdown(
-            label="Region",
-            choices=[
-                "East of England",
-                "East Midlands",
-                "London",
-                "North East",
-                "North West",
-                "Scotland",
-                "South East",
-                "South West",
-                "Wales",
-                "West Midlands",
-                "Yorkshire and The Humber"
-            ]
-        )
+    region = gr.Dropdown(
+        label="Region",
+        choices=[
+            "East of England",
+            "East Midlands",
+            "London",
+            "North East",
+            "North West",
+            "Scotland",
+            "South East",
+            "South West",
+            "Wales",
+            "West Midlands",
+            "Yorkshire and The Humber"
+        ]
+    )
 
-    with gr.Row():
-        employment_status = gr.Dropdown(
-            label="Employment Status",
-            choices=[
-                "Employed",
-                "Self-employed",
-                "Unemployed",
-                "Student",
-                "Retired"
-            ]
-        )
+    employment_status = gr.Dropdown(
+        label="Employment Status",
+        choices=[
+            "Employed",
+            "Self-employed",
+            "Unemployed",
+            "Student",
+            "Retired"
+        ]
+    )
 
-        months_in_current_job = gr.Number(
-            label="Months in Current Job",
-            value=0,
-            minimum=0
-        )
+    months_in_current_job = gr.Number(
+        label="Months in Current Job",
+        value=0,
+        minimum=0
+    )
 
-demo.launch()   
+    # -------------------------
+    # Financial Details
+    # -------------------------
+
+    gr.Markdown("## Financial Details")
+
+    annual_income_gbp = gr.Number(
+        label="Annual Income (£)",
+        value=30000,
+        minimum=0
+    )
+
+    monthly_expenses_gbp = gr.Number(
+        label="Monthly Expenses (£)",
+        value=1500,
+        minimum=0
+    )
+
+    existing_debt_gbp = gr.Number(
+        label="Existing Debt (£)",
+        value=0,
+        minimum=0
+    )
+
+    savings_balance_gbp = gr.Number(
+        label="Savings Balance (£)",
+        value=0,
+        minimum=0
+    )
+
+
+demo.launch()
