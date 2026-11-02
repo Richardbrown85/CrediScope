@@ -216,7 +216,7 @@ CrediScope/
 │   └── crediscope_random_forest.joblib
 │
 ├── notebooks/
-│   └── CrediScope_Analysis_v2.ipynb
+│   └── CrediScope_Analysis.ipynb
 │
 ├── src/
 │   └── preprocessing.py
