@@ -1,109 +1,243 @@
 from pathlib import Path
 import sys
+
+import gradio as gr
 import joblib
+import numpy as np
+import pandas as pd
 import shap
+
+
+# ---------------------------------------------------------
+# Project paths
+# ---------------------------------------------------------
 
 project_root = Path(__file__).resolve().parent.parent
 
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-model_path = project_root / "models" / "crediscope_random_forest.joblib"
+model_path = (
+    project_root
+    / "models"
+    / "crediscope_random_forest.joblib"
+)
+
+
+# ---------------------------------------------------------
+# Load trained CrediScope model
+# ---------------------------------------------------------
 
 model = joblib.load(model_path)
-
-print("CrediScope model loaded successfully.")
-print(type(model))
-
-sample_applicant = {
-    "num_dependents": 1,
-    "region": "East of England",
-    "employment_status": "Employed",
-    "months_in_current_job": 48,
-    "annual_income_gbp": 42000,
-    "monthly_expenses_gbp": 1800,
-    "years_at_current_address": 5,
-    "existing_debt_gbp": 8000,
-    "num_existing_credit_lines": 2,
-    "num_late_payments_24m": 0,
-    "credit_history": "All paid on time",
-    "has_savings_account": "Yes",
-    "savings_balance_gbp": 5000,
-    "checking_account_status": "0-500",
-    "loan_amount_gbp": 10000,
-    "loan_term_months": 36,
-    "loan_purpose": "Car",
-    "has_guarantor": "No",
-    "previous_application_declined": "No",
-    "application_channel": "Online"
-}
-
-import pandas as pd
-
-applicant_df = pd.DataFrame([sample_applicant])
-
-prediction = model.predict(applicant_df)[0]
-probability = model.predict_proba(applicant_df)[0][1]
-
-decision = "Higher Risk" if prediction == 1 else "Lower Risk"
-
-print("Decision:", decision)
-print(f"Predicted default probability: {probability:.1%}")
 
 preprocessor = model.named_steps["preprocessor"]
 classifier = model.named_steps["classifier"]
 
-transformed_applicant = preprocessor.transform(applicant_df)
 
-explainer = shap.TreeExplainer(classifier)
-shap_values = explainer.shap_values(transformed_applicant)
+# ---------------------------------------------------------
+# Read categorical values directly from trained model
+# ---------------------------------------------------------
 
-feature_names = (
+column_transformer = (
     preprocessor
     .named_steps["column_transformer"]
+)
+
+categorical_pipeline = (
+    column_transformer
+    .named_transformers_["categorical"]
+)
+
+encoder = categorical_pipeline.named_steps["encoder"]
+
+categorical_features = [
+    "region",
+    "employment_status",
+    "credit_history",
+    "has_savings_account",
+    "checking_account_status",
+    "loan_purpose",
+    "has_guarantor",
+    "previous_application_declined",
+    "application_channel"
+]
+
+category_choices = {
+    feature: [str(value) for value in categories]
+    for feature, categories in zip(
+        categorical_features,
+        encoder.categories_
+    )
+}
+
+
+# ---------------------------------------------------------
+# SHAP explainer
+# ---------------------------------------------------------
+
+explainer = shap.TreeExplainer(classifier)
+
+feature_names = (
+    column_transformer
     .get_feature_names_out()
 )
 
-default_shap_values = shap_values[0, :, 1]
 
-explanation = pd.DataFrame({
-    "feature": feature_names,
-    "shap_value": default_shap_values
-})
-
-explanation["absolute_shap"] = explanation["shap_value"].abs()
-
-top_factors = explanation.sort_values(
-    "absolute_shap",
-    ascending=False
-).head(5)
-
-print("\nTop prediction factors:")
-print(top_factors[["feature", "shap_value"]])
+# ---------------------------------------------------------
+# Friendly feature labels
+# ---------------------------------------------------------
 
 friendly_labels = {
-    "numeric__expense_to_income_ratio": "Expense-to-income ratio",
-    "numeric__annual_income_gbp": "Annual income",
-    "numeric__debt_to_income_ratio": "Debt-to-income ratio",
-    "numeric__num_late_payments_24m": "Late payments in the last 24 months",
-    "categorical__credit_history_All paid on time": "Credit history: all paid on time"
+    "num_dependents": "Number of dependants",
+    "months_in_current_job": "Time in current job",
+    "annual_income_gbp": "Annual income",
+    "monthly_expenses_gbp": "Monthly expenses",
+    "years_at_current_address": "Time at current address",
+    "existing_debt_gbp": "Existing debt",
+    "num_existing_credit_lines": "Existing credit lines",
+    "num_late_payments_24m": "Late payments in the last 24 months",
+    "savings_balance_gbp": "Savings balance",
+    "loan_amount_gbp": "Requested loan amount",
+    "loan_term_months": "Loan term",
+    "debt_to_income_ratio": "Debt-to-income ratio",
+    "expense_to_income_ratio": "Expense-to-income ratio"
 }
 
-top_factors["display_feature"] = top_factors["feature"].replace(
-    friendly_labels
-)
 
-top_factors["direction"] = top_factors["shap_value"].apply(
-    lambda x: "higher" if x > 0 else "lower"
-)
+# ---------------------------------------------------------
+# Convert transformed feature name into readable text
+# ---------------------------------------------------------
 
-print("\nPlain-English factors:")
+def make_feature_readable(feature_name):
 
-for _, row in top_factors.iterrows():
-    print(
-        f"- {row['display_feature']} pushed the predicted default risk "
-        f"{row['direction']} for this applicant."
+    clean_name = (
+        feature_name
+        .replace("numeric__", "")
+        .replace("categorical__", "")
     )
+
+    if clean_name in friendly_labels:
+        return friendly_labels[clean_name]
+
+    for feature in categorical_features:
+
+        prefix = f"{feature}_"
+
+        if clean_name.startswith(prefix):
+
+            category = clean_name.replace(
+                prefix,
+                "",
+                1
+            )
+
+            feature_label = (
+                feature
+                .replace("_", " ")
+                .title()
+            )
+
+            return f"{feature_label}: {category}"
+
+    return (
+        clean_name
+        .replace("_", " ")
+        .title()
+    )
+
+
+# ---------------------------------------------------------
+# Produce applicant-level SHAP explanation
+# ---------------------------------------------------------
+
+def explain_applicant(applicant):
+
+    transformed = preprocessor.transform(applicant)
+
+    shap_values = explainer.shap_values(
+        transformed
+    )
+
+    # SHAP output format can vary slightly between versions.
+    if isinstance(shap_values, list):
+
+        default_values = np.asarray(
+            shap_values[1]
+        )[0]
+
+    else:
+
+        shap_array = np.asarray(shap_values)
+
+        if shap_array.ndim == 3:
+
+            default_values = (
+                shap_array[0, :, 1]
+            )
+
+        elif shap_array.ndim == 2:
+
+            default_values = (
+                shap_array[0]
+            )
+
+        else:
+
+            raise ValueError(
+                "Unexpected SHAP output format."
+            )
+
+    explanation = pd.DataFrame({
+        "feature": feature_names,
+        "shap_value": default_values
+    })
+
+    explanation["absolute_shap"] = (
+        explanation["shap_value"].abs()
+    )
+
+    top_factors = (
+        explanation
+        .sort_values(
+            "absolute_shap",
+            ascending=False
+        )
+        .head(5)
+    )
+
+    reasons = []
+
+    for _, row in top_factors.iterrows():
+
+        display_feature = make_feature_readable(
+            row["feature"]
+        )
+
+        if row["shap_value"] > 0:
+
+            direction = (
+                "pushed the predicted "
+                "default risk higher"
+            )
+
+        else:
+
+            direction = (
+                "pushed the predicted "
+                "default risk lower"
+            )
+
+        reasons.append(
+            f"- **{display_feature}** "
+            f"{direction} for this applicant."
+        )
+
+    return "\n".join(reasons)
+
+
+# ---------------------------------------------------------
+# Prediction function
+# ---------------------------------------------------------
 
 def predict_risk(
     num_dependents,
@@ -127,7 +261,8 @@ def predict_risk(
     has_guarantor,
     previous_application_declined,
     application_channel
-    ):
+):
+
     months_in_current_job_total = (
         years_in_current_job * 12
         + months_in_current_job
@@ -152,248 +287,333 @@ def predict_risk(
         "loan_term_months": loan_term_months,
         "loan_purpose": loan_purpose,
         "has_guarantor": has_guarantor,
-        "previous_application_declined": previous_application_declined,
+        "previous_application_declined":
+            previous_application_declined,
         "application_channel": application_channel
     }])
 
     prediction = model.predict(applicant)[0]
-    probability = model.predict_proba(applicant)[0][1]
 
-    decision = "Higher Risk" if prediction == 1 else "Lower Risk"
+    probability = model.predict_proba(
+        applicant
+    )[0][1]
 
-    return decision, f"{probability:.1%}"
+    decision = (
+        "Higher Risk"
+        if prediction == 1
+        else "Lower Risk"
+    )
 
-    prediction = model.predict(applicant)[0]
-    probability = model.predict_proba(applicant)[0][1]
+    explanation = explain_applicant(
+        applicant
+    )
 
-    decision = "Higher Risk" if prediction == 1 else "Lower Risk"
+    return (
+        decision,
+        f"{probability:.1%}",
+        explanation
+    )
 
-    return decision, f"{probability:.1%}"
 
-import gradio as gr
+# ---------------------------------------------------------
+# Gradio interface
+# ---------------------------------------------------------
 
 with gr.Blocks(title="CrediScope") as demo:
 
     gr.Markdown("# CrediScope")
-    gr.Markdown("### Clear decisions. Clear reasons.")
+    gr.Markdown(
+        "### Clear decisions. Clear reasons."
+    )
 
-    # -------------------------
+    # -----------------------------------------------------
     # 1. Loan Details
-    # -------------------------
+    # -----------------------------------------------------
 
     gr.Markdown("## 1. Loan Details")
 
-    loan_amount_gbp = gr.Number(
-        label="Loan Amount (£)",
-        value=10000,
-        minimum=0
-    )
+    with gr.Row():
 
-    loan_term_months = gr.Number(
-        label="Loan Term (Months)",
-        value=36,
-        minimum=1
-    )
+        loan_amount_gbp = gr.Number(
+            label="Loan Amount (£)",
+            value=10000,
+            minimum=0
+        )
 
-    loan_purpose = gr.Dropdown(
-        label="Loan Purpose",
-        choices=[
-            "Car",
-            "Home improvements",
-            "Debt consolidation",
-            "Education",
-            "Medical",
-            "Other"
-        ]
-    )
+        loan_term_months = gr.Dropdown(
+            label="Loan Term",
+            choices=[
+                12,
+                24,
+                36,
+                48,
+                60,
+                72
+            ],
+            value=36
+        )
 
-    application_channel = gr.Dropdown(
-        label="Application Channel",
-        choices=[
-            "Online",
-            "Branch",
-            "Telephone"
-        ]
-    )
+    with gr.Row():
 
-    # -------------------------
+        loan_purpose = gr.Dropdown(
+            label="Loan Purpose",
+            choices=category_choices[
+                "loan_purpose"
+            ],
+            value=category_choices[
+                "loan_purpose"
+            ][0]
+        )
+
+        application_channel = gr.Dropdown(
+            label="Application Channel",
+            choices=category_choices[
+                "application_channel"
+            ],
+            value=category_choices[
+                "application_channel"
+            ][0]
+        )
+
+    # -----------------------------------------------------
     # 2. Applicant Details
-    # -------------------------
+    # -----------------------------------------------------
 
     gr.Markdown("## 2. Applicant Details")
 
-    region = gr.Dropdown(
-        label="Region",
-        choices=[
-            "East of England",
-            "East Midlands",
-            "London",
-            "North East",
-            "North West",
-            "Scotland",
-            "South East",
-            "South West",
-            "Wales",
-            "West Midlands",
-            "Yorkshire and The Humber"
-        ]
-    )
+    with gr.Row():
 
-    num_dependents = gr.Number(
-        label="Number of Dependants",
-        value=0,
-        minimum=0
-    )
+        region = gr.Dropdown(
+            label="Region",
+            choices=category_choices[
+                "region"
+            ],
+            value=category_choices[
+                "region"
+            ][0]
+        )
 
-    # -------------------------
+        num_dependents = gr.Number(
+            label="Number of Dependants",
+            value=0,
+            minimum=0,
+            precision=0,
+            step=1
+        )
+
+    # -----------------------------------------------------
     # 3. Employment & Residence
-    # -------------------------
+    # -----------------------------------------------------
 
-    gr.Markdown("## 3. Employment & Residence")
+    gr.Markdown(
+        "## 3. Employment & Residence"
+    )
 
     employment_status = gr.Dropdown(
         label="Employment Status",
-        choices=[
-            "Employed",
-            "Self-employed",
-            "Unemployed",
-            "Student",
-            "Retired"
-        ]
+        choices=category_choices[
+            "employment_status"
+        ],
+        value=category_choices[
+            "employment_status"
+        ][0]
     )
 
-    years_in_current_job = gr.Number(
-        label="Years in Current Job",
-        value=0,
-        minimum=0,
-        precision=0,
-        step=1
-    )
+    with gr.Row():
 
-    months_in_current_job = gr.Number(
-        label="Months in Current Job",
-        value=0,
-        minimum=0,
-        maximum=11,
-        precision=0,
-        step=1
-    )
+        years_in_current_job = gr.Number(
+            label="Years in Current Job",
+            value=0,
+            minimum=0,
+            precision=0,
+            step=1
+        )
 
-    years_at_current_address = gr.Number(
-        label="Years at Current Address",
-        value=1,
-        minimum=0
-    )
+        months_in_current_job = gr.Number(
+            label="Additional Months",
+            value=0,
+            minimum=0,
+            maximum=11,
+            precision=0,
+            step=1
+        )
 
-    # -------------------------
+        years_at_current_address = gr.Number(
+            label="Years at Current Address",
+            value=1,
+            minimum=0
+        )
+
+    # -----------------------------------------------------
     # 4. Financial Position
-    # -------------------------
+    # -----------------------------------------------------
 
     gr.Markdown("## 4. Financial Position")
 
-    annual_income_gbp = gr.Number(
-        label="Annual Income (£)",
-        value=30000,
-        minimum=0
-    )
+    with gr.Row():
 
-    monthly_expenses_gbp = gr.Number(
-        label="Monthly Expenses (£)",
-        value=1500,
-        minimum=0
-    )
+        annual_income_gbp = gr.Number(
+            label="Annual Income (£)",
+            value=30000,
+            minimum=0
+        )
 
-    existing_debt_gbp = gr.Number(
-        label="Existing Debt (£)",
-        value=0,
-        minimum=0
-    )
+        monthly_expenses_gbp = gr.Number(
+            label="Monthly Expenses (£)",
+            value=1500,
+            minimum=0
+        )
 
-    has_savings_account = gr.Dropdown(
-        label="Has Savings Account",
-        choices=["Yes", "No"]
-    )
+        existing_debt_gbp = gr.Number(
+            label="Existing Debt (£)",
+            value=0,
+            minimum=0
+        )
 
-    savings_balance_gbp = gr.Number(
-        label="Savings Balance (£)",
-        value=0,
-        minimum=0
-    )
+    with gr.Row():
 
-    checking_account_status = gr.Dropdown(
-        label="Checking Account Status",
-        choices=[
-            "Overdrawn",
-            "0-500",
-            ">=500",
-            "No account"
-        ]
-    )
+        has_savings_account = gr.Dropdown(
+            label="Has Savings Account",
+            choices=category_choices[
+                "has_savings_account"
+            ],
+            value=category_choices[
+                "has_savings_account"
+            ][0]
+        )
 
-    # -------------------------
+        savings_balance_gbp = gr.Number(
+            label="Savings Balance (£)",
+            value=0,
+            minimum=0
+        )
+
+        checking_account_status = gr.Dropdown(
+            label="Checking Account Status",
+            choices=category_choices[
+                "checking_account_status"
+            ],
+            value=category_choices[
+                "checking_account_status"
+            ][0]
+        )
+
+    # -----------------------------------------------------
     # 5. Credit History
-    # -------------------------
+    # -----------------------------------------------------
 
     gr.Markdown("## 5. Credit History")
 
-    num_existing_credit_lines = gr.Number(
-        label="Number of Existing Credit Lines",
-        value=0,
-        minimum=0
-    )
+    with gr.Row():
 
-    num_late_payments_24m = gr.Number(
-        label="Late Payments in Last 24 Months",
-        value=0,
-        minimum=0
-    )
+        num_existing_credit_lines = gr.Number(
+            label="Existing Credit Lines",
+            value=0,
+            minimum=0,
+            precision=0,
+            step=1
+        )
+
+        num_late_payments_24m = gr.Number(
+            label="Late Payments in Last 24 Months",
+            value=0,
+            minimum=0,
+            precision=0,
+            step=1
+        )
 
     credit_history = gr.Dropdown(
         label="Credit History",
-        choices=[
-            "All paid on time",
-            "Existing credits paid",
-            "No credits taken",
-            "Past delays",
-            "Critical account"
-        ]
+        choices=category_choices[
+            "credit_history"
+        ],
+        value=category_choices[
+            "credit_history"
+        ][0]
     )
 
-    has_guarantor = gr.Dropdown(
-        label="Has Guarantor",
-        choices=["Yes", "No"]
-    )
+    with gr.Row():
 
-    previous_application_declined = gr.Dropdown(
-        label="Previous Application Declined",
-        choices=["Yes", "No"]
-    )
+        has_guarantor = gr.Dropdown(
+            label="Has Guarantor",
+            choices=category_choices[
+                "has_guarantor"
+            ],
+            value=category_choices[
+                "has_guarantor"
+            ][0]
+        )
 
-    # -------------------------
+        previous_application_declined = (
+            gr.Dropdown(
+                label=(
+                    "Previous Application "
+                    "Declined"
+                ),
+                choices=category_choices[
+                    "previous_application_declined"
+                ],
+                value=category_choices[
+                    "previous_application_declined"
+                ][0]
+            )
+        )
+
+    # -----------------------------------------------------
     # 6. Review
-    # -------------------------
+    # -----------------------------------------------------
 
-    gr.Markdown("## 6. Review Application")
     gr.Markdown(
-        "Check the information above before running the risk assessment."
+        "## 6. Review Application"
     )
 
-    # -------------------------
+    gr.Markdown(
+        "Check the applicant information above "
+        "before running the risk assessment."
+    )
+
+    # -----------------------------------------------------
     # 7. Risk Assessment
-    # -------------------------
+    # -----------------------------------------------------
 
-    gr.Markdown("## 7. Risk Assessment")
-
-    predict_button = gr.Button("Predict Risk")
-
-    decision_output = gr.Textbox(
-        label="Decision",
-        interactive=False
+    gr.Markdown(
+        "## 7. Risk Assessment"
     )
 
-    probability_output = gr.Textbox(
-        label="Predicted Default Probability",
-        interactive=False
+    predict_button = gr.Button(
+        "Predict Risk",
+        variant="primary"
+    )
+
+    with gr.Row():
+
+        decision_output = gr.Textbox(
+            label="Risk Assessment",
+            interactive=False
+        )
+
+        probability_output = gr.Textbox(
+            label=(
+                "Predicted Default Probability"
+            ),
+            interactive=False
+        )
+
+    gr.Markdown(
+        "### Main Factors Influencing "
+        "This Assessment"
+    )
+
+    explanation_output = gr.Markdown(
+        "Run the risk assessment to see "
+        "the main prediction factors."
+    )
+
+    gr.Markdown(
+        "> **Important:** These factors explain "
+        "how the model reached this prediction. "
+        "They do not prove that any factor caused "
+        "the applicant's risk."
     )
 
     predict_button.click(
@@ -423,8 +643,15 @@ with gr.Blocks(title="CrediScope") as demo:
         ],
         outputs=[
             decision_output,
-            probability_output
+            probability_output,
+            explanation_output
         ]
     )
 
-demo.launch()
+
+# ---------------------------------------------------------
+# Launch application
+# ---------------------------------------------------------
+
+if __name__ == "__main__":
+    demo.launch()
