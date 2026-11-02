@@ -105,6 +105,34 @@ for _, row in top_factors.iterrows():
         f"{row['direction']} for this applicant."
     )
 
+def predict_risk(
+    num_dependents,
+    region,
+    employment_status,
+    months_in_current_job,
+    annual_income_gbp,
+    monthly_expenses_gbp,
+    existing_debt_gbp,
+    savings_balance_gbp
+):
+    applicant = pd.DataFrame([{
+        "num_dependents": num_dependents,
+        "region": region,
+        "employment_status": employment_status,
+        "months_in_current_job": months_in_current_job,
+        "annual_income_gbp": annual_income_gbp,
+        "monthly_expenses_gbp": monthly_expenses_gbp,
+        "existing_debt_gbp": existing_debt_gbp,
+        "savings_balance_gbp": savings_balance_gbp
+    }])
+
+    prediction = model.predict(applicant)[0]
+    probability = model.predict_proba(applicant)[0][1]
+
+    decision = "Higher Risk" if prediction == 1 else "Lower Risk"
+
+    return decision, f"{probability:.1%}"    
+
 import gradio as gr
 
 with gr.Blocks(title="CrediScope") as demo:
