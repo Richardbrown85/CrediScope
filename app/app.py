@@ -272,5 +272,40 @@ with gr.Blocks(title="CrediScope") as demo:
         ]
     )
 
+    # -------------------------
+    # Loan Details
+    # -------------------------
+
+    gr.Markdown("## Loan Details")
+
+    loan_amount_gbp = gr.Number(
+        label="Loan Amount (£)",
+        value=10000,
+        minimum=0
+    )
+
+    loan_term_months = gr.Number(
+        label="Loan Term (Months)",
+        value=36,
+        minimum=1
+    )
+
+    loan_purpose = gr.Dropdown(
+        label="Loan Purpose",
+        choices=[
+            "Car",
+            "Home improvements",
+            "Debt consolidation",
+            "Education",
+            "Medical",
+            "Other"
+        ]
+    )
+
+    has_guarantor = gr.Dropdown(
+        label="Has Guarantor",
+        choices=["Yes", "No"]
+    )
+
 
 demo.launch()
