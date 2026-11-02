@@ -158,7 +158,6 @@ def explain_applicant(applicant):
         transformed
     )
 
-    # SHAP output format can vary slightly between versions.
     if isinstance(shap_values, list):
 
         default_values = np.asarray(
@@ -236,6 +235,37 @@ def explain_applicant(applicant):
 
 
 # ---------------------------------------------------------
+# Applicant-facing notice
+# ---------------------------------------------------------
+
+def create_applicant_notice(decision, probability):
+
+    if decision == "Higher Risk":
+
+        return (
+            "### Applicant Notice\n\n"
+            "Your application has been assessed as presenting a "
+            f"higher predicted risk of default ({probability:.1%}).\n\n"
+            "This assessment is based on the financial and credit "
+            "information supplied with the application. The main "
+            "factors influencing the assessment are shown above.\n\n"
+            "This result is not a final lending decision. "
+            "Your application should be reviewed by an authorised "
+            "human decision-maker before any final outcome is made."
+        )
+
+    return (
+        "### Applicant Notice\n\n"
+        "Your application has been assessed as presenting a "
+        f"lower predicted risk of default ({probability:.1%}).\n\n"
+        "This assessment is based on the financial and credit "
+        "information supplied with the application.\n\n"
+        "This result is not a guarantee of approval and should "
+        "form only part of the overall lending decision."
+    )
+
+
+# ---------------------------------------------------------
 # Prediction function
 # ---------------------------------------------------------
 
@@ -308,10 +338,16 @@ def predict_risk(
         applicant
     )
 
+    applicant_notice = create_applicant_notice(
+        decision,
+        probability
+    )
+
     return (
         decision,
         f"{probability:.1%}",
-        explanation
+        explanation,
+        applicant_notice
     )
 
 
@@ -616,6 +652,22 @@ with gr.Blocks(title="CrediScope") as demo:
         "the applicant's risk."
     )
 
+    applicant_notice_output = gr.Markdown(
+        "Run the risk assessment to generate "
+        "the applicant notice."
+    )
+
+    gr.Markdown(
+        "---\n"
+        "### Responsible Use\n\n"
+        "CrediScope is a decision-support prototype. "
+        "Its prediction should not be used as the sole "
+        "basis for a lending decision. A suitably "
+        "authorised human decision-maker should review "
+        "the application and the model output before "
+        "any final decision is made."
+    )
+
     predict_button.click(
         fn=predict_risk,
         inputs=[
@@ -644,7 +696,8 @@ with gr.Blocks(title="CrediScope") as demo:
         outputs=[
             decision_output,
             probability_output,
-            explanation_output
+            explanation_output,
+            applicant_notice_output
         ]
     )
 
