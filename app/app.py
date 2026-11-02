@@ -216,5 +216,40 @@ with gr.Blocks(title="CrediScope") as demo:
         minimum=0
     )
 
+    # -------------------------
+    # Credit Details
+    # -------------------------
+
+    gr.Markdown("## Credit Details")
+
+    years_at_current_address = gr.Number(
+        label="Years at Current Address",
+        value=1,
+        minimum=0
+    )
+
+    num_existing_credit_lines = gr.Number(
+        label="Number of Existing Credit Lines",
+        value=0,
+        minimum=0
+    )
+
+    num_late_payments_24m = gr.Number(
+        label="Late Payments in Last 24 Months",
+        value=0,
+        minimum=0
+    )
+
+    credit_history = gr.Dropdown(
+        label="Credit History",
+        choices=[
+            "All paid on time",
+            "Existing credits paid",
+            "No credits taken",
+            "Past delays",
+            "Critical account"
+        ]
+    )
+
 
 demo.launch()
