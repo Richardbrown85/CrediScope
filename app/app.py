@@ -109,6 +109,50 @@ import gradio as gr
 
 with gr.Blocks(title="CrediScope") as demo:
     gr.Markdown("# CrediScope")
-    gr.Markdown("Clear decisions. Clear reasons.")
+    gr.Markdown("### Clear decisions. Clear reasons.")
 
-demo.launch()    
+    gr.Markdown("## Applicant Details")
+
+    with gr.Row():
+        num_dependents = gr.Number(
+            label="Number of Dependants",
+            value=0,
+            minimum=0
+        )
+
+        region = gr.Dropdown(
+            label="Region",
+            choices=[
+                "East of England",
+                "East Midlands",
+                "London",
+                "North East",
+                "North West",
+                "Scotland",
+                "South East",
+                "South West",
+                "Wales",
+                "West Midlands",
+                "Yorkshire and The Humber"
+            ]
+        )
+
+    with gr.Row():
+        employment_status = gr.Dropdown(
+            label="Employment Status",
+            choices=[
+                "Employed",
+                "Self-employed",
+                "Unemployed",
+                "Student",
+                "Retired"
+            ]
+        )
+
+        months_in_current_job = gr.Number(
+            label="Months in Current Job",
+            value=0,
+            minimum=0
+        )
+
+demo.launch()   
