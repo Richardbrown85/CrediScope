@@ -104,3 +104,11 @@ for _, row in top_factors.iterrows():
         f"- {row['display_feature']} pushed the predicted default risk "
         f"{row['direction']} for this applicant."
     )
+
+import gradio as gr
+
+with gr.Blocks(title="CrediScope") as demo:
+    gr.Markdown("# CrediScope")
+    gr.Markdown("Clear decisions. Clear reasons.")
+
+demo.launch()    
