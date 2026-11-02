@@ -112,8 +112,20 @@ def predict_risk(
     months_in_current_job,
     annual_income_gbp,
     monthly_expenses_gbp,
+    years_at_current_address,
     existing_debt_gbp,
-    savings_balance_gbp
+    num_existing_credit_lines,
+    num_late_payments_24m,
+    credit_history,
+    has_savings_account,
+    savings_balance_gbp,
+    checking_account_status,
+    loan_amount_gbp,
+    loan_term_months,
+    loan_purpose,
+    has_guarantor,
+    previous_application_declined,
+    application_channel
 ):
     applicant = pd.DataFrame([{
         "num_dependents": num_dependents,
@@ -122,8 +134,20 @@ def predict_risk(
         "months_in_current_job": months_in_current_job,
         "annual_income_gbp": annual_income_gbp,
         "monthly_expenses_gbp": monthly_expenses_gbp,
+        "years_at_current_address": years_at_current_address,
         "existing_debt_gbp": existing_debt_gbp,
-        "savings_balance_gbp": savings_balance_gbp
+        "num_existing_credit_lines": num_existing_credit_lines,
+        "num_late_payments_24m": num_late_payments_24m,
+        "credit_history": credit_history,
+        "has_savings_account": has_savings_account,
+        "savings_balance_gbp": savings_balance_gbp,
+        "checking_account_status": checking_account_status,
+        "loan_amount_gbp": loan_amount_gbp,
+        "loan_term_months": loan_term_months,
+        "loan_purpose": loan_purpose,
+        "has_guarantor": has_guarantor,
+        "previous_application_declined": previous_application_declined,
+        "application_channel": application_channel
     }])
 
     prediction = model.predict(applicant)[0]
@@ -131,7 +155,7 @@ def predict_risk(
 
     decision = "Higher Risk" if prediction == 1 else "Lower Risk"
 
-    return decision, f"{probability:.1%}"    
+    return decision, f"{probability:.1%}"
 
 import gradio as gr
 
