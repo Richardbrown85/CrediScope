@@ -202,6 +202,16 @@ The interface includes a human-review notice stating that model output should no
 
 ---
 
+### Development Review and Protected Attributes
+
+During a review of the preprocessing and feature-selection workflow, `age_years` was identified as remaining in the candidate modelling feature set despite the project decision to exclude protected attributes from direct predictive use.
+
+The feature-selection logic was corrected so that `age_years`, `sex`, `marital_status`, `residency_status`, and `housing_status` are excluded from the predictive feature set and retained separately for fairness analysis.
+
+This review demonstrates the importance of verifying the final model feature list rather than relying only on earlier preprocessing decisions. `region` remains available as a predictive feature at this stage, but its potential role as a proxy for protected characteristics is considered during fairness analysis.
+
+---
+
 ## Project Structure
 
 ```text
