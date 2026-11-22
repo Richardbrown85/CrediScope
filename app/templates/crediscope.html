@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101f36" />
+  <title>CrediScope | Explainable credit risk</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='crediscope.css') }}" />
+  <script src="{{ url_for('static', filename='crediscope.js') }}" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" aria-label="Application information">
+    <div class="brand"><div class="brand-mark" aria-hidden="true">C<span>◈</span></div><div><strong>CrediScope</strong><small>Clear decisions. Clear reasons.</small></div></div>
+    <div class="sidebar-kicker">WORKSPACE</div>
+    <div class="nav-active"><span class="nav-dot"></span> Applicant assessment</div>
+    <div class="sidebar-note"><span class="sidebar-note-icon">◇</span><div><strong>Decision support</strong><p>An explainable AI prototype. Predictions are not lending decisions.</p></div></div>
+    <div class="sidebar-bottom"><span class="status-dot"></span> Local demonstration <span class="version">COM300</span></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Applicant assessment</strong></div><div class="top-status"><span class="status-dot"></span> Model connected via Python</div></header>
+    <div class="content">
+      <div class="page-head"><div><p class="eyebrow">EXPLAINABLE CREDIT RISK</p><h1>Applicant assessment</h1><p class="subtitle">Review the applicant's information, then generate an explainable risk assessment.</p></div><div class="proto-pill">● &nbsp; Research prototype</div></div>
+      <div class="workspace-grid">
+        <form id="applicant-form" class="form-stack">
+          <section class="panel">
+            <div class="panel-header"><div class="section-icon">01</div><div><h2>Loan details</h2><p>Requested borrowing and application context</p></div></div>
+            <div class="fields cols-2">
+              <label>Loan amount <span>£</span><input type="number" name="loan_amount_gbp" value="10000" min="0" step="100" required></label>
+              <label>Loan term <span>months</span><select name="loan_term_months" required>{% for n in [12,24,36,48,60,72] %}<option value="{{ n }}" {% if n==36 %}selected{% endif %}>{{ n }} months</option>{% endfor %}</select></label>
+              <label>Loan purpose<select name="loan_purpose" required>{% for v in categories.loan_purpose %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Application channel<select name="application_channel" required>{% for v in categories.application_channel %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div class="section-icon">02</div><div><h2>Applicant profile</h2><p>Location, dependants and employment</p></div></div>
+            <div class="fields cols-2">
+              <label>Region<select name="region" required>{% for v in categories.region %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Number of dependants<input type="number" name="num_dependents" min="0" max="30" step="1" value="0" required></label>
+              <label class="span-2">Employment status<select name="employment_status" required>{% for v in categories.employment_status %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Years in current job<input type="number" name="years_in_current_job" min="0" max="80" step="1" value="0" required></label>
+              <label>Additional months<input type="number" name="months_in_current_job" min="0" max="11" step="1" value="0" required></label>
+              <label class="span-2">Years at current address<input type="number" name="years_at_current_address" min="0" max="120" step="0.5" value="1" required></label>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div class="section-icon">03</div><div><h2>Financial position</h2><p>Income, commitments and savings</p></div></div>
+            <div class="fields cols-2">
+              <label>Annual income <span>£</span><input type="number" name="annual_income_gbp" min="0" step="100" value="30000" required></label>
+              <label>Monthly expenses <span>£</span><input type="number" name="monthly_expenses_gbp" min="0" step="50" value="1500" required></label>
+              <label>Existing debt <span>£</span><input type="number" name="existing_debt_gbp" min="0" step="100" value="0" required></label>
+              <label>Savings balance <span>£</span><input type="number" name="savings_balance_gbp" min="0" step="100" value="0" required></label>
+              <label>Has savings account<select name="has_savings_account" required>{% for v in categories.has_savings_account %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Checking account status<select name="checking_account_status" required>{% for v in categories.checking_account_status %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div class="section-icon">04</div><div><h2>Credit history</h2><p>Prior credit experience and application context</p></div></div>
+            <div class="fields cols-2">
+              <label>Existing credit lines<input type="number" name="num_existing_credit_lines" min="0" max="1000" step="1" value="0" required></label>
+              <label>Late payments (24 months)<input type="number" name="num_late_payments_24m" min="0" max="1000" step="1" value="0" required></label>
+              <label class="span-2">Credit history<select name="credit_history" required>{% for v in categories.credit_history %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Has guarantor<select name="has_guarantor" required>{% for v in categories.has_guarantor %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Previous application declined<select name="previous_application_declined" required>{% for v in categories.previous_application_declined %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+            </div>
+          </section>
+          <div class="form-actions"><p>All fields are illustrative applicant information.</p><button type="submit" id="predict-btn"><span id="button-label">Generate risk assessment</span><span aria-hidden="true">↗</span></button></div>
+        </form>
+        <div class="results-column">
+          <section class="result-card" aria-labelledby="result-title">
+            <div class="result-top"><span class="result-overline">MODEL OUTPUT</span><span class="result-tag">RANDOM FOREST</span></div>
+            <h2 id="result-title">Risk assessment</h2>
+            <p id="risk-status" class="risk-status" aria-live="polite">Awaiting assessment</p>
+            <div class="score-wrap"><div><p class="score-label">Predicted probability of default</p><div id="score" class="score">—<span></span></div></div><div class="score-icon" aria-hidden="true">↗</div></div>
+            <div class="bar-track"><div id="score-bar" class="bar-fill"></div><div class="threshold-marker" title="Classification threshold: 50%"></div></div>
+            <div class="bar-caption"><span>0%</span><span>50% threshold</span><span>100%</span></div>
+            <div class="result-divider"></div><p class="result-foot">Predicted risk, not a credit approval or decline. An authorised reviewer must assess any final lending decision.</p>
+          </section>
+          <section class="panel insight-panel"><div class="small-panel-head"><div><p class="eyebrow">EXPLAINABILITY</p><h2>Main contributing factors</h2></div><span class="tiny-badge">SHAP</span></div><p class="panel-intro">The five features with the strongest influence on this applicant's prediction.</p><div id="factors" class="factors" aria-live="polite"><div class="empty-state">Run an assessment to reveal the model's main contributing factors.</div></div><p class="insight-footnote">SHAP describes the model's behaviour; it does not establish real-world causation. Contributions are relative to the model's baseline.</p></section>
+          <section class="panel notice-panel"><div class="small-panel-head"><div><p class="eyebrow">APPLICANT COMMUNICATION</p><h2>Applicant notice</h2></div><span class="tiny-badge">PLAIN ENGLISH</span></div><p id="notice" class="notice-body" aria-live="polite">An applicant-friendly explanation will appear here once an assessment has been generated.</p></section>
+          <div class="safety-card"><div class="safety-mark">i</div><p><strong>Responsible use</strong><br>CrediScope is a university prototype trained on synthetic applications. It has not been validated for live lending and must not be used to make real credit decisions.</p></div>
+        </div>
+      </div>
+      <footer>CrediScope <span>·</span> COM300 Applied Artificial Intelligence <span>·</span> Educational demonstration</footer>
+    </div>
+  </main>
+</div>
+</body>
+</html>
