@@ -1,7 +1,5 @@
-"""CrediScope Flask UI: a separate front-end for the existing saved model.
-
+"""CrediScope Flask UI:
 Start from the repository root: python app/flask_app.py
-The original Gradio app/app.py is intentionally left untouched.
 """
 from __future__ import annotations
 
@@ -20,7 +18,7 @@ from flask import Flask, jsonify, render_template, request
 
 MODEL_PATH = ROOT / "models" / "crediscope_random_forest.joblib"
 
-# Keep the feature list and ordering aligned with the existing working Gradio app.
+# Keep the feature list and ordering aligned with the trained model.
 CATEGORICAL_FEATURES = [
     "region", "employment_status", "credit_history", "has_savings_account",
     "checking_account_status", "loan_purpose", "has_guarantor",
