@@ -56,13 +56,13 @@
               <label>Existing debt <span>£</span><input type="number" name="existing_debt_gbp" min="0" step="100" value="0" required></label>
               <label>Savings balance <span>£</span><input type="number" name="savings_balance_gbp" min="0" step="100" value="0" required></label>
               <label>Has savings account<select name="has_savings_account" required>{% for v in categories.has_savings_account %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
-              <label>Checking account status<select name="checking_account_status" required>{% for v in categories.checking_account_status %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
+              <label>Current account position<select name="checking_account_status" required>{% for v in categories.checking_account_status %}<option value="{{ v }}">{% if v == 'Overdrawn' %}Overdrawn{% elif v == '0 to 500 GBP' %}In credit (up to £500){% elif v == '500 GBP or more' %}In credit (£500 or more){% elif v == 'No account' %}No current account{% else %}{{ v | replace('_',' ') | title }}{% endif %}</option>{% endfor %}</select></label>
             </div>
           </section>
           <section class="panel">
             <div class="panel-header"><div class="section-icon">04</div><div><h2>Credit history</h2><p>Prior credit experience and application context</p></div></div>
             <div class="fields cols-2">
-              <label>Existing credit lines<input type="number" name="num_existing_credit_lines" min="0" max="1000" step="1" value="0" required></label>
+              <label>Existing Credit<input type="number" name="num_existing_credit_lines" min="0" max="1000" step="1" value="0" required></label>
               <label>Late payments (24 months)<input type="number" name="num_late_payments_24m" min="0" max="1000" step="1" value="0" required></label>
               <label class="span-2">Credit history<select name="credit_history" required>{% for v in categories.credit_history %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
               <label>Has guarantor<select name="has_guarantor" required>{% for v in categories.has_guarantor %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>

@@ -43,7 +43,14 @@ form.addEventListener('submit', async (event) => {
       row.className = 'factor';
       const name = document.createElement('div');
       name.className = 'factor-name';
-      name.textContent = factor.feature;
+      // UK-facing wording only: preserve the original model feature and category values.
+    name.textContent = factor.feature
+      .replace(/^Existing credit lines$/i, 'Existing Credit')
+      .replace(/^Checking Account Status:/i, 'Current account position:')
+      .replace(/^Has Checking Account\b/i, 'Has a current account')
+      .replace(/0 To 500 Gbp/gi, 'In credit (up to £500)')
+      .replace(/500 Gbp Or More/gi, 'In credit (£500 or more)')
+      .replace(/No Account/gi, 'No current account');
       const direction = document.createElement('span');
       direction.className = 'factor-direction ' + factor.direction;
       direction.textContent = factor.direction === 'higher' ? '↑ Higher risk' : '↓ Lower risk';
