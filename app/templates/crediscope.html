@@ -10,14 +10,16 @@
 </head>
 <body>
 <div class="shell">
-  <aside class="sidebar" aria-label="Application information">
-    <div class="brand"><div class="brand-mark" aria-hidden="true">C<span>◈</span></div><div><strong>CrediScope</strong><small>Clear decisions. Clear reasons.</small></div></div>
-    <div class="sidebar-kicker">WORKSPACE</div>
-    <div class="nav-active"><span class="nav-dot"></span> Applicant assessment</div>
-    <div class="sidebar-note"><span class="sidebar-note-icon">◇</span><div><strong>Decision support</strong><p>An explainable AI prototype. Predictions are not lending decisions.</p></div></div>
-  </aside>
   <main class="main">
-    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Applicant assessment</strong></div></header>
+    <header class="topbar">
+      <div class="topbar-brand" aria-label="CrediScope — Clear decisions. Clear reasons.">
+        <div class="topbar-brand-mark" aria-hidden="true">C<span>◈</span></div>
+        <div class="topbar-brand-text">
+          <strong>CrediScope</strong>
+          <small>Clear decisions. Clear reasons.</small>
+        </div>
+      </div>
+    </header>
     <div class="content">
       <div class="page-head"><div><p class="eyebrow">EXPLAINABLE CREDIT RISK</p><h1>Applicant assessment</h1><p class="subtitle">Review the applicant's information, then generate an explainable risk assessment.</p></div><div class="demo-pill">Demo</div></div>
       <div class="workspace-grid">
@@ -63,7 +65,7 @@
               <label>Previous application declined<select name="previous_application_declined" required>{% for v in categories.previous_application_declined %}<option value="{{ v }}">{{ v | replace('_',' ') | title }}</option>{% endfor %}</select></label>
             </div>
           </section>
-          <div class="form-actions"><p>All fields are illustrative applicant information.</p><button type="submit" id="predict-btn"><span id="button-label">Generate risk assessment</span><span aria-hidden="true">↗</span></button></div>
+          <div class="form-actions"><button type="submit" id="predict-btn"><span id="button-label">Generate risk assessment</span><span aria-hidden="true">↗</span></button></div>
         </form>
         <div class="results-column">
           <section class="result-card" aria-labelledby="result-title">
@@ -77,7 +79,6 @@
           </section>
           <section class="panel insight-panel"><div class="small-panel-head"><div><p class="eyebrow">EXPLAINABILITY</p><h2>Main contributing factors</h2></div><span class="tiny-badge">SHAP</span></div><p class="panel-intro">The five features with the strongest influence on this applicant's prediction.</p><div id="factors" class="factors" aria-live="polite"><div class="empty-state">Run an assessment to reveal the model's main contributing factors.</div></div><p class="insight-footnote">SHAP describes the model's behaviour; it does not establish real-world causation. Contributions are relative to the model's baseline.</p></section>
           <section class="panel notice-panel"><div class="small-panel-head"><div><p class="eyebrow">APPLICANT COMMUNICATION</p><h2>Applicant notice</h2></div><span class="tiny-badge">PLAIN ENGLISH</span></div><p id="notice" class="notice-body" aria-live="polite">An applicant-friendly explanation will appear here once an assessment has been generated.</p></section>
-          <div class="safety-card"><div class="safety-mark">i</div><p><strong>Responsible use</strong><br>CrediScope is a university prototype trained on synthetic applications. It has not been validated for live lending and must not be used to make real credit decisions.</p></div>
         </div>
       </div>
     </div>
